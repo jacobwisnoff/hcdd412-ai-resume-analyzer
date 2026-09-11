@@ -1,1 +1,1 @@
-# HCDD412_AIResumeAnalyzer
+# HCDD412 AI Resume Analyzer
