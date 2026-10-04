@@ -1,0 +1,5 @@
+project:
+  name: AI Resume Analyzer
+  tz: America/New_York
+  adrFolder: ./docs/adr
+  packages: []
