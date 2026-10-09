@@ -11,16 +11,16 @@ The team requires a cloud platform that supports application hosting, future dat
 
 ## Decision Drivers
 
-1. Compliance with course requirements
-2. Infrastructure must be provisioned from code
-3. Team collaboration and shared access
-4. Repeatable deployments
-5. Version-controlled infrastructure
-6. Integration with GitHub workflows
-7. Ease of learning and implementation
-8. Support for future application growth
-9. Compatibility with AI and database services
-10. Azure resource management capabilities
+- Compliance with course requirements
+- Infrastructure must be provisioned from code
+- Team collaboration and shared access
+- Repeatable deployments
+- Version-controlled infrastructure
+- Integration with GitHub workflows
+- Ease of learning and implementation
+- Support for future application growth
+- Compatibility with AI and database services
+- Azure resource management capabilities
 
 ## Considered Options
 
@@ -42,23 +42,23 @@ The team will store all infrastructure definitions in the project repository and
 
 ### Positive Consequences
 
-1. Infrastructure can be recreated consistently from source code.
-2. Infrastructure changes are tracked through Git version control.
-3. Team members can collaborate on infrastructure through pull requests.
-4. Deployments become repeatable and auditable.
-5. Azure integrates well with future application services.
-6. Bicep simplifies deployment of Azure resources.
-7. The cloud environment can be expanded to support new project requirements.
-8. The project aligns with course expectations regarding cloud infrastructure and Infrastructure as Code.
+- Infrastructure can be recreated consistently from source code.
+- Infrastructure changes are tracked through Git version control.
+- Team members can collaborate on infrastructure through pull requests.
+- Deployments become repeatable and auditable.
+- Azure integrates well with future application services.
+- Bicep simplifies deployment of Azure resources.
+- The cloud environment can be expanded to support new project requirements.
+- The project aligns with course expectations regarding cloud infrastructure and Infrastructure as Code.
 
 ### Negative Consequences
 
-1. Team members must learn Azure deployment concepts.
-2. Team members must learn Bicep syntax and templates.
-3. The solution is tied to Azure-specific services.
-4. Infrastructure deployment failures may occur if templates are configured incorrectly.
-5. Resource usage may result in cloud costs if free-tier limits are exceeded.
-6. Managing permissions and access control requires additional administration.
+- Team members must learn Azure deployment concepts.
+- Team members must learn Bicep syntax and templates.
+- The solution is tied to Azure-specific services.
+- Infrastructure deployment failures may occur if templates are configured incorrectly.
+- Resource usage may result in cloud costs if free-tier limits are exceeded.
+- Managing permissions and access control requires additional administration.
 
 ## Confirmation
 
