@@ -12,6 +12,7 @@ resource plan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: 'plan-${appName}-${env}'
   location: location
   kind: 'linux'
+//DO NOT CHANGE F1
   sku: { name: 'F1' }
   properties: { reserved: true }
 }
