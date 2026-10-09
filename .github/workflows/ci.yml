@@ -1,0 +1,52 @@
+# CI — the label shown in the repo's Actions tab
+name: CI
+# Runs on every push to main AND on every pull request (milestone requirement)
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+# This restricts the access level of the workflow to only read access for the contents of the repository.
+permissions:
+  contents: read
+
+jobs:
+  # Validates the IaC template on every PR. Fails the check if main.bicep has errors.
+  validate-iac:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      # Azure CLI is preinstalled on GitHub runners; this compiles Bicep to ARM and reports errors.
+      # Skipped until infra/main.bicep exists.
+      - name: Validate Bicep
+        if: hashFiles('infra/main.bicep') != ''
+        run: az bicep build --file infra/main.bicep
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+# Pulls the repo code onto the runner. Without this step, the runner would not have access to the code in the repository.
+      - name: Check out repository
+        uses: actions/checkout@v4
+# Each app step below is skipped until the team repo has a package-lock.json, so CI stays green for now.
+      - name: Set up Node.js
+        if: hashFiles('package-lock.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+      - name: Run tests
+        if: hashFiles('package-lock.json') != ''
+        run: npm test
+      - name: Build project
+        if: hashFiles('package-lock.json') != ''
+        run: npm run build
+      - name: Archive build artifact
+        if: hashFiles('package-lock.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
