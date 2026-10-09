@@ -65,4 +65,15 @@ The initial cloud environment will consist of Azure resources required to suppor
 
 ### Positive
 
+- Infrastructure can be recreated consistently from source code.
+- Infrastructure changes are tracked through Git version control.
+- Team members can collaborate through pull requests.
+- Deployments become repeatable and auditable.
+- Supports future expansion of the project architecture.
+
 ### Negative 
+
+- Team members must learn Bicep syntax and Azure deployment practices.
+- The solution is tied to Azure resources and services.
+- Deployment failures may occur if templates contain configuration errors.
+
