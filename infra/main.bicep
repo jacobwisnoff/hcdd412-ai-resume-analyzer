@@ -15,3 +15,17 @@ resource plan 'Microsoft.Web/serverfarms@2023-12-01' = {
   sku: { name: 'F1' }
   properties: { reserved: true }
 }
+
+// Web app: the site that runs on the plan above. HTTPS only.
+// No alwaysOn (not supported on F1).
+resource app 'Microsoft.Web/sites@2023-12-01' = {
+  name: 'app-${appName}-${env}'
+  location: location
+  properties: {
+    serverFarmId: plan.id
+    httpsOnly: true
+  }
+}
+
+// Prints the site URL after deploy (this is what gets submitted to Canvas)
+output webAppUrl string = 'https://${app.properties.defaultHostName}'
