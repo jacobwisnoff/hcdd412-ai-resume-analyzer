@@ -30,3 +30,26 @@ The project is intended to help job seekers quickly understand whether their res
 ## Project Status
 
 This project is currently in development.
+
+## Run Locally
+
+The application uses a small Node.js server so the same command can run locally
+and on Render.
+
+```bash
+npm start
+```
+
+Then open <http://localhost:10000>.
+
+## Deploy to Render
+
+1. Push this repository to GitHub.
+2. In Render, choose **New → Blueprint** and select the repository.
+3. Render will use [`render.yaml`](./render.yaml) to configure the web service.
+4. Deploy the service and open the generated URL.
+
+The server binds to Render's `PORT` environment variable and exposes `GET /health`
+for deployment health checks. Anthropic integration has not been added yet; when
+it is implemented, its API key should be added to Render environment variables,
+not committed to this repository.
