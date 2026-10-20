@@ -58,10 +58,10 @@ removeFile.addEventListener("click", () => {
 dropZone.addEventListener("drop", (event) => {
   const [file] = event.dataTransfer.files;
   if (!file) return;
-  const allowedTypes = [".pdf", ".doc", ".docx", ".txt"];
+  const allowedTypes = [".pdf"];
   const extension = `.${file.name.split(".").pop().toLowerCase()}`;
   if (!allowedTypes.includes(extension)) {
-    formMessage.textContent = "Please choose a PDF, DOC, DOCX, or TXT file.";
+    formMessage.textContent = "Please choose a PDF file.";
     return;
   }
   const transfer = new DataTransfer();
@@ -77,16 +77,44 @@ sampleButton.addEventListener("click", () => {
   updateFormState();
 });
 
-analyzeButton.addEventListener("click", () => {
+function renderAnalysis(analysis) {
+  document.querySelector(".demo-badge").textContent = "AI ANALYSIS";
+  document.querySelector(".results-time").textContent = "AI ANALYSIS · JUST NOW";
+  document.querySelector(".score").innerHTML = `${analysis.score}<span>%</span>`;
+  document.querySelector(".score-track span").style.width = `${analysis.score}%`;
+  document.querySelector(".score-card p").textContent = analysis.summary;
+  const rows = document.querySelectorAll(".insight-row");
+  rows[0].querySelector("strong").textContent = "Strong alignment";
+  rows[0].querySelector("small").textContent = analysis.strengths.join(" · ");
+  rows[1].querySelector("strong").textContent = "Could be stronger";
+  rows[1].querySelector("small").textContent = analysis.gaps.join(" · ");
+  rows[2].querySelector("strong").textContent = "Next best move";
+  rows[2].querySelector("small").textContent = analysis.recommendations.join(" · ");
+}
+
+analyzeButton.addEventListener("click", async () => {
   analyzeButton.disabled = true;
   analyzeLabel.textContent = "Analyzing...";
-  formMessage.textContent = "Demo analysis complete. Anthropic API integration will be added later.";
-  window.setTimeout(() => {
+  formMessage.textContent = "Reviewing your resume...";
+  const formData = new FormData();
+  formData.append("resume", resumeFile.files[0]);
+  formData.append("jobDescription", jobDescription.value.trim());
+
+  try {
+    const response = await fetch("/api/analyze", { method: "POST", body: formData });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "The analysis could not be completed.");
+    renderAnalysis(data);
     results.hidden = false;
     analyzeLabel.textContent = "Analyze again";
     analyzeButton.disabled = false;
+    formMessage.textContent = "Analysis complete.";
     results.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 700);
+  } catch (error) {
+    formMessage.textContent = error.message;
+    analyzeLabel.textContent = "Try again";
+    analyzeButton.disabled = false;
+  }
 });
 
 updateFormState();

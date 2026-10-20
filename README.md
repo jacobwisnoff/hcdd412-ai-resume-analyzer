@@ -34,7 +34,9 @@ This project is currently in development.
 ## Run Locally
 
 The application uses a small Node.js server so the same command can run locally
-and on Render.
+and on Render. Users upload a text-based PDF resume and provide a job
+description; the server extracts the PDF text and sends the comparison to
+Anthropic.
 
 ```bash
 npm start
@@ -83,6 +85,7 @@ Anthropic console and create a replacement before using it.
 4. Deploy the service and open the generated URL.
 
 The server binds to Render's `PORT` environment variable and exposes `GET /health`
-for deployment health checks. The user interface is still in demo mode; the
-server-side key configuration is ready for the future Anthropic analysis
-endpoint.
+for deployment health checks. `POST /api/analyze` accepts the PDF and job
+description and uses `ANTHROPIC_API_KEY` on the server to produce the results.
+Scanned/image-only PDFs are not supported because they do not contain
+extractable text.
