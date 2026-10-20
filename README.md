@@ -42,6 +42,39 @@ npm start
 
 Then open <http://localhost:10000>.
 
+## Configure the Anthropic API key
+
+The Anthropic API key must only be available to the server. Do not add it to
+`src/`, commit it to GitHub, or paste it into browser developer tools.
+
+For local development, copy `.env.example` to `.env` and set
+`ANTHROPIC_API_KEY` in that file. The application reads environment variables
+provided by the process; if your local Node setup does not load `.env` files,
+set the variable in your shell before starting the server. For PowerShell:
+
+```powershell
+$env:ANTHROPIC_API_KEY = "your-key"
+npm start
+```
+
+For Render, create the service from [`render.yaml`](./render.yaml), then add
+the key under **Environment → Environment Variables**. The Blueprint marks
+`ANTHROPIC_API_KEY` as a secret value that must be entered in the Render
+dashboard; it is not stored in this repository.
+
+For Azure App Service, set the application setting through Azure rather than
+putting the value in [`infra/main.bicep`](./infra/main.bicep):
+
+```bash
+az webapp config appsettings set \
+  --resource-group <resource-group> \
+  --name <app-name> \
+  --settings ANTHROPIC_API_KEY="<your-key>"
+```
+
+If a key has ever been committed or shared publicly, revoke it in the
+Anthropic console and create a replacement before using it.
+
 ## Deploy to Render
 
 1. Push this repository to GitHub.
@@ -50,6 +83,6 @@ Then open <http://localhost:10000>.
 4. Deploy the service and open the generated URL.
 
 The server binds to Render's `PORT` environment variable and exposes `GET /health`
-for deployment health checks. Anthropic integration has not been added yet; when
-it is implemented, its API key should be added to Render environment variables,
-not committed to this repository.
+for deployment health checks. The user interface is still in demo mode; the
+server-side key configuration is ready for the future Anthropic analysis
+endpoint.
