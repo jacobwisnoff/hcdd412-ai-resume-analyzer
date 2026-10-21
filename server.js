@@ -11,7 +11,7 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.join(projectRoot, "src");
 const port = Number.parseInt(process.env.PORT || "10000", 10);
 const maxResumeBytes = 10 * 1024 * 1024;
-const anthropicModel = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
+const anthropicModel = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",

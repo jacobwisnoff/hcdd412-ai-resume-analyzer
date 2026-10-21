@@ -64,6 +64,16 @@ the key under **Environment → Environment Variables**. The Blueprint marks
 `ANTHROPIC_API_KEY` as a secret value that must be entered in the Render
 dashboard; it is not stored in this repository.
 
+The model is selected by the server's `ANTHROPIC_MODEL` environment variable.
+The default is `claude-haiku-5-5`, the low-cost Haiku model. To make the
+selection explicit in Render, add this environment variable:
+
+```text
+ANTHROPIC_MODEL=claude-haiku-5-5
+```
+
+Do not add `ANTHROPIC_MODEL` to the browser or frontend code.
+
 For Azure App Service, set the application setting through Azure rather than
 putting the value in [`infra/main.bicep`](./infra/main.bicep):
 
