@@ -11,6 +11,7 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.join(projectRoot, "src");
 const port = Number.parseInt(process.env.PORT || "10000", 10);
 const maxResumeBytes = 10 * 1024 * 1024;
+const anthropicModel = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -123,7 +124,7 @@ async function analyzeResume(request, response) {
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: anthropicModel,
     max_tokens: 1200,
     system: "You are a careful resume reviewer. Only use evidence present in the resume and job description. Return valid JSON only, with no markdown.",
     messages: [{
@@ -154,9 +155,25 @@ The score must be an integer from 0 to 100.`
   }
   let analysis;
   try {
-    analysis = JSON.parse(responseText);
+    const jsonText = responseText.replace(/^```json\s*/i, "").replace(/\s*```$/i, "").trim();
+    analysis = JSON.parse(jsonText);
   } catch {
-    throw new Error("Anthropic returned invalid analysis JSON.");
+    const error = new Error("The AI returned an invalid analysis format.");
+    error.statusCode = 502;
+    throw error;
+  }
+  if (
+    !Number.isInteger(analysis.score) ||
+    analysis.score < 0 ||
+    analysis.score > 100 ||
+    typeof analysis.summary !== "string" ||
+    !Array.isArray(analysis.strengths) ||
+    !Array.isArray(analysis.gaps) ||
+    !Array.isArray(analysis.recommendations)
+  ) {
+    const error = new Error("The AI returned an incomplete analysis.");
+    error.statusCode = 502;
+    throw error;
   }
   sendJson(response, 200, analysis);
 }
@@ -189,8 +206,12 @@ const server = createServer(async (request, response) => {
     } catch (error) {
       console.error("Analysis request failed:", error);
       if (!response.headersSent) {
-        sendJson(response, error.statusCode || 500, {
-          error: error.statusCode ? error.message : "The analysis could not be completed."
+        const statusCode = error.statusCode || error.status || 500;
+        const message = statusCode >= 500
+          ? error.message || "The analysis service could not complete the request."
+          : error.message;
+        sendJson(response, statusCode, {
+          error: message
         });
       }
     }
