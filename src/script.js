@@ -10,6 +10,8 @@ const analyzeLabel = document.querySelector("#analyze-label");
 const sampleButton = document.querySelector("#sample-button");
 const formMessage = document.querySelector("#form-message");
 const results = document.querySelector("#results");
+const copyButton = document.querySelector("#copy-button");
+const maxResumeBytes = 10 * 1024 * 1024;
 
 const sampleDescription = `We are looking for a Product Manager to lead the development of customer-focused digital products. You will collaborate with engineering, design, and marketing teams to define product strategy, prioritize the roadmap, and deliver measurable outcomes.
 
@@ -24,10 +26,16 @@ function updateFormState() {
 
 function showSelectedFile(file) {
   if (!file) return;
+  if (file.size > maxResumeBytes) {
+    resumeFile.value = "";
+    setMessage("That file is over 10 MB. Please choose a smaller PDF.", true);
+    updateFormState();
+    return;
+  }
   fileName.textContent = file.name;
   dropZone.hidden = true;
   fileSelected.hidden = false;
-  formMessage.textContent = "";
+  setMessage("");
   updateFormState();
 }
 
@@ -61,7 +69,7 @@ dropZone.addEventListener("drop", (event) => {
   const allowedTypes = [".pdf"];
   const extension = `.${file.name.split(".").pop().toLowerCase()}`;
   if (!allowedTypes.includes(extension)) {
-    formMessage.textContent = "Please choose a PDF file.";
+    setMessage("Please choose a PDF file.", true);
     return;
   }
   const transfer = new DataTransfer();
@@ -73,48 +81,118 @@ dropZone.addEventListener("drop", (event) => {
 sampleButton.addEventListener("click", () => {
   jobDescription.value = sampleDescription;
   jobDescription.focus();
-  formMessage.textContent = "Sample job description added.";
+  setMessage("Sample job description added.");
   updateFormState();
 });
 
+let lastAnalysis = null;
+
+function fillList(listElement, items) {
+  listElement.replaceChildren(...items.map((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    return li;
+  }));
+}
+
+function scoreBand(score) {
+  if (score >= 75) return { label: "Strong match", className: "band-strong" };
+  if (score >= 50) return { label: "Partial match", className: "band-partial" };
+  return { label: "Weak match", className: "band-weak" };
+}
+
 function renderAnalysis(analysis) {
-  document.querySelector(".demo-badge").textContent = "AI ANALYSIS";
-  document.querySelector(".results-time").textContent = "AI ANALYSIS · JUST NOW";
-  document.querySelector(".score").innerHTML = `${analysis.score}<span>%</span>`;
-  document.querySelector(".score-track span").style.width = `${analysis.score}%`;
-  document.querySelector(".score-card p").textContent = analysis.summary;
-  const rows = document.querySelectorAll(".insight-row");
-  rows[0].querySelector("strong").textContent = "Strong alignment";
-  rows[0].querySelector("small").textContent = analysis.strengths.join(" · ");
-  rows[1].querySelector("strong").textContent = "Could be stronger";
-  rows[1].querySelector("small").textContent = analysis.gaps.join(" · ");
-  rows[2].querySelector("strong").textContent = "Next best move";
-  rows[2].querySelector("small").textContent = analysis.recommendations.join(" · ");
+  lastAnalysis = analysis;
+  const band = scoreBand(analysis.score);
+  const scoreCard = document.querySelector(".score-card");
+  scoreCard.classList.remove("band-strong", "band-partial", "band-weak");
+  scoreCard.classList.add(band.className);
+
+  document.querySelector("#score-value").textContent = analysis.score;
+  document.querySelector("#score-band").textContent = band.label;
+  document.querySelector("#score-summary").textContent = analysis.summary;
+  // Animate the bar from 0 so the score feels "computed" rather than static.
+  const bar = document.querySelector("#score-bar");
+  bar.style.width = "0%";
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = `${analysis.score}%`; }));
+
+  fillList(document.querySelector("#strengths-list"), analysis.strengths);
+  fillList(document.querySelector("#gaps-list"), analysis.gaps);
+  fillList(document.querySelector("#recommendations-list"), analysis.recommendations);
+
+  const keywords = analysis.missingKeywords || [];
+  document.querySelector("#keywords-block").hidden = keywords.length === 0;
+  fillList(document.querySelector("#keyword-list"), keywords);
+}
+
+function setMessage(text, isError = false) {
+  formMessage.textContent = text;
+  formMessage.classList.toggle("is-error", isError);
+}
+
+function setLoading(isLoading) {
+  analyzeButton.classList.toggle("is-loading", isLoading);
+  analyzeButton.setAttribute("aria-busy", String(isLoading));
 }
 
 analyzeButton.addEventListener("click", async () => {
   analyzeButton.disabled = true;
+  setLoading(true);
   analyzeLabel.textContent = "Analyzing...";
-  formMessage.textContent = "Reviewing your resume...";
+  setMessage("Reviewing your resume. This can take a few seconds.");
+  // The free hosting tier sleeps when idle, so the first request can be slow.
+  const slowNotice = setTimeout(() => {
+    setMessage("Still working… the server may be waking up. The first analysis can take up to a minute.");
+  }, 12000);
+
   const formData = new FormData();
   formData.append("resume", resumeFile.files[0]);
   formData.append("jobDescription", jobDescription.value.trim());
 
   try {
     const response = await fetch("/api/analyze", { method: "POST", body: formData });
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      // Hosting errors (e.g. a 502 page) come back as HTML, not JSON.
+      throw new Error("The server didn't respond correctly. Please wait a moment and try again.");
+    }
     if (!response.ok) throw new Error(data.error || "The analysis could not be completed.");
     renderAnalysis(data);
     results.hidden = false;
     analyzeLabel.textContent = "Analyze again";
-    analyzeButton.disabled = false;
-    formMessage.textContent = "Analysis complete.";
+    setMessage("Analysis complete.");
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
-    formMessage.textContent = error.message;
+    setMessage(error.message, true);
     analyzeLabel.textContent = "Try again";
-    analyzeButton.disabled = false;
+  } finally {
+    clearTimeout(slowNotice);
+    setLoading(false);
+    updateFormState();
   }
+});
+
+copyButton.addEventListener("click", async () => {
+  if (!lastAnalysis) return;
+  const a = lastAnalysis;
+  const section = (title, items) => `${title}\n${items.map((item) => `- ${item}`).join("\n")}`;
+  const text = [
+    `ResumeIQ match: ${a.score}% (${scoreBand(a.score).label})`,
+    a.summary,
+    section("Strengths", a.strengths),
+    section("Could be stronger", a.gaps),
+    section("Next best moves", a.recommendations),
+    a.missingKeywords?.length ? `Missing keywords: ${a.missingKeywords.join(", ")}` : ""
+  ].filter(Boolean).join("\n\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    copyButton.textContent = "Copied!";
+  } catch {
+    copyButton.textContent = "Copy failed — select the text manually";
+  }
+  setTimeout(() => { copyButton.textContent = "Copy results"; }, 2000);
 });
 
 updateFormState();

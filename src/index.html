@@ -19,7 +19,7 @@
       </a>
       <div class="topbar-note">
         <span class="status-dot" aria-hidden="true"></span>
-        Your data stays private
+        Resumes are never saved
       </div>
     </header>
 
@@ -83,6 +83,7 @@
           <button class="sample-button" id="sample-button" type="button">Use a sample job description <span aria-hidden="true">↗</span></button>
           <button class="analyze-button" id="analyze-button" type="button" disabled>
             <span id="analyze-label">Analyze my resume</span>
+            <span class="spinner" aria-hidden="true"></span>
             <span class="button-arrow" aria-hidden="true">→</span>
           </button>
         </div>
@@ -95,30 +96,38 @@
             <span class="step-label">02 / YOUR RESULTS</span>
             <h2 id="results-title">A stronger application starts here.</h2>
           </div>
-          <span class="results-time">DEMO ANALYSIS · JUST NOW</span>
+          <span class="results-time">AI ANALYSIS · JUST NOW</span>
         </div>
         <div class="results-grid">
           <div class="score-card">
             <span class="card-label">OVERALL MATCH</span>
-            <div class="score">78<span>%</span></div>
-            <div class="score-track"><span></span></div>
-            <p>Good foundation. A few targeted changes can make your fit even clearer.</p>
+            <div class="score"><span id="score-value">0</span><span class="score-unit">%</span></div>
+            <div class="score-track"><span id="score-bar"></span></div>
+            <span class="score-band" id="score-band"></span>
+            <p id="score-summary"></p>
+            <div class="keywords" id="keywords-block" hidden>
+              <span class="card-label">MISSING KEYWORDS</span>
+              <ul class="keyword-list" id="keyword-list"></ul>
+            </div>
           </div>
           <div class="insight-card">
             <span class="card-label">KEY INSIGHTS</span>
             <div class="insight-row">
-              <span class="insight-icon positive">+</span>
-              <div><strong>Strong alignment</strong><small>Project management · Agile · Leadership</small></div>
+              <span class="insight-icon positive" aria-hidden="true">+</span>
+              <div><strong>Strong alignment</strong><ul class="insight-list" id="strengths-list"></ul></div>
             </div>
             <div class="insight-row">
-              <span class="insight-icon needs-work">!</span>
-              <div><strong>Could be stronger</strong><small>Data analysis · Stakeholder reporting</small></div>
+              <span class="insight-icon needs-work" aria-hidden="true">!</span>
+              <div><strong>Could be stronger</strong><ul class="insight-list" id="gaps-list"></ul></div>
             </div>
             <div class="insight-row">
-              <span class="insight-icon neutral">→</span>
-              <div><strong>Next best move</strong><small>Add measurable outcomes to 2–3 bullets</small></div>
+              <span class="insight-icon neutral" aria-hidden="true">→</span>
+              <div><strong>Next best moves</strong><ol class="insight-list" id="recommendations-list"></ol></div>
             </div>
           </div>
+        </div>
+        <div class="results-actions">
+          <button class="sample-button" id="copy-button" type="button">Copy results</button>
         </div>
       </section>
     </main>
