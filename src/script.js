@@ -24,11 +24,24 @@ function updateFormState() {
   characterCount.textContent = `${jobDescription.value.length.toLocaleString()} / 5,000`;
 }
 
+function validateResumeFile(file) {
+  if (!file) return "Please choose a PDF file.";
+  const extension = `.${file.name.split(".").pop().toLowerCase()}`;
+  if (extension !== ".pdf" || (file.type && file.type !== "application/pdf")) {
+    return "Please choose a PDF file.";
+  }
+  if (file.size > maxResumeBytes) {
+    return "The resume must be 10 MB or smaller.";
+  }
+  return "";
+}
+
 function showSelectedFile(file) {
   if (!file) return;
-  if (file.size > maxResumeBytes) {
+  const validationMessage = validateResumeFile(file);
+  if (validationMessage) {
     resumeFile.value = "";
-    setMessage("That file is over 10 MB. Please choose a smaller PDF.", true);
+    setMessage(validationMessage, true);
     updateFormState();
     return;
   }
@@ -66,12 +79,6 @@ removeFile.addEventListener("click", () => {
 dropZone.addEventListener("drop", (event) => {
   const [file] = event.dataTransfer.files;
   if (!file) return;
-  const allowedTypes = [".pdf"];
-  const extension = `.${file.name.split(".").pop().toLowerCase()}`;
-  if (!allowedTypes.includes(extension)) {
-    setMessage("Please choose a PDF file.", true);
-    return;
-  }
   const transfer = new DataTransfer();
   transfer.items.add(file);
   resumeFile.files = transfer.files;
