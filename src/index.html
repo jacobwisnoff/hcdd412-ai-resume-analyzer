@@ -48,12 +48,12 @@
               </div>
               <span class="file-type">PDF ONLY</span>
             </div>
-            <label class="upload-zone" id="drop-zone" for="resume-file">
+            <label class="upload-zone" id="drop-zone" for="resume-file" aria-describedby="upload-help upload-limit">
               <input id="resume-file" type="file" accept=".pdf,application/pdf">
               <span class="upload-icon" aria-hidden="true">↑</span>
               <strong id="upload-title">Drop your resume here</strong>
               <span id="upload-help">or <u>browse files</u> from your computer</span>
-              <span class="upload-limit">MAX FILE SIZE 10MB</span>
+              <span class="upload-limit" id="upload-limit">MAX FILE SIZE 10MB</span>
             </label>
             <div class="file-selected" id="file-selected" hidden>
               <span class="file-icon" aria-hidden="true">▤</span>
@@ -71,22 +71,22 @@
               <span class="file-type">REQUIRED</span>
             </div>
             <label class="sr-only" for="job-description">Paste the job description</label>
-            <textarea id="job-description" placeholder="Paste the job description here..." maxlength="5000"></textarea>
+            <textarea id="job-description" placeholder="Paste the job description here..." maxlength="5000" aria-describedby="description-help character-count"></textarea>
             <div class="textarea-footer">
-              <span>Include the responsibilities and requirements</span>
-              <span id="character-count">0 / 5,000</span>
+              <span id="description-help">Include the responsibilities and requirements</span>
+              <span id="character-count" aria-live="polite">0 / 5,000</span>
             </div>
           </div>
         </div>
 
         <div class="action-row">
           <button class="sample-button" id="sample-button" type="button">Use a sample job description <span aria-hidden="true">↗</span></button>
-          <button class="analyze-button" id="analyze-button" type="button" disabled>
+          <button class="analyze-button" id="analyze-button" type="button" disabled aria-describedby="form-message">
             <span id="analyze-label">Analyze my resume</span>
             <span class="button-arrow" aria-hidden="true">→</span>
           </button>
         </div>
-        <p class="form-message" id="form-message" role="status"></p>
+        <p class="form-message" id="form-message" role="status" aria-live="polite" aria-atomic="true"></p>
       </section>
 
       <section class="results" id="results" aria-labelledby="results-title" hidden>

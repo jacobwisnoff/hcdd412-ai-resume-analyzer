@@ -22,6 +22,7 @@ body {
 
 button, textarea, input { font: inherit; }
 button { cursor: pointer; }
+button:focus-visible, textarea:focus-visible, .upload-zone:focus-within { outline: 3px solid #f1a465; outline-offset: 3px; }
 
 .app-shell { max-width: 1240px; margin: auto; padding: 0 56px; }
 .topbar { height: 86px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
@@ -70,6 +71,7 @@ textarea::placeholder { color: #a2afad; }
 .analyze-button { display: flex; min-width: 208px; align-items: center; justify-content: space-between; padding: 15px 18px; border: 0; border-radius: 3px; color: white; background: var(--teal); font-size: 12px; font-weight: 700; transition: background .2s ease, transform .2s ease; }
 .analyze-button:hover:not(:disabled) { background: var(--teal-dark); transform: translateY(-2px); }
 .analyze-button:disabled { cursor: not-allowed; opacity: .4; }
+.analyze-button[aria-busy="true"] { cursor: wait; }
 .button-arrow { font-size: 18px; font-weight: 400; }
 .form-message { min-height: 17px; margin: 16px 0 0; color: var(--teal); font-size: 12px; }
 
@@ -95,6 +97,10 @@ textarea::placeholder { color: #a2afad; }
 .insight-row small { margin-top: 3px; color: var(--muted); font-size: 11px; }
 footer { display: flex; justify-content: space-between; padding: 45px 0 30px; color: #9aa7a5; font-size: 9px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
 
 @media (max-width: 720px) {
   .app-shell { padding: 0 20px; }

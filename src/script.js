@@ -10,6 +10,7 @@ const analyzeLabel = document.querySelector("#analyze-label");
 const sampleButton = document.querySelector("#sample-button");
 const formMessage = document.querySelector("#form-message");
 const results = document.querySelector("#results");
+const maxResumeBytes = 10 * 1024 * 1024;
 
 const sampleDescription = `We are looking for a Product Manager to lead the development of customer-focused digital products. You will collaborate with engineering, design, and marketing teams to define product strategy, prioritize the roadmap, and deliver measurable outcomes.
 
@@ -22,8 +23,27 @@ function updateFormState() {
   characterCount.textContent = `${jobDescription.value.length.toLocaleString()} / 5,000`;
 }
 
+function validateResumeFile(file) {
+  if (!file) return "Please choose a PDF file.";
+  const extension = `.${file.name.split(".").pop().toLowerCase()}`;
+  if (extension !== ".pdf" || (file.type && file.type !== "application/pdf")) {
+    return "Please choose a PDF file.";
+  }
+  if (file.size > maxResumeBytes) {
+    return "The resume must be 10 MB or smaller.";
+  }
+  return "";
+}
+
 function showSelectedFile(file) {
   if (!file) return;
+  const validationMessage = validateResumeFile(file);
+  if (validationMessage) {
+    resumeFile.value = "";
+    formMessage.textContent = validationMessage;
+    updateFormState();
+    return;
+  }
   fileName.textContent = file.name;
   dropZone.hidden = true;
   fileSelected.hidden = false;
@@ -58,12 +78,6 @@ removeFile.addEventListener("click", () => {
 dropZone.addEventListener("drop", (event) => {
   const [file] = event.dataTransfer.files;
   if (!file) return;
-  const allowedTypes = [".pdf"];
-  const extension = `.${file.name.split(".").pop().toLowerCase()}`;
-  if (!allowedTypes.includes(extension)) {
-    formMessage.textContent = "Please choose a PDF file.";
-    return;
-  }
   const transfer = new DataTransfer();
   transfer.items.add(file);
   resumeFile.files = transfer.files;
@@ -94,6 +108,7 @@ function renderAnalysis(analysis) {
 
 analyzeButton.addEventListener("click", async () => {
   analyzeButton.disabled = true;
+  analyzeButton.setAttribute("aria-busy", "true");
   analyzeLabel.textContent = "Analyzing...";
   formMessage.textContent = "Reviewing your resume...";
   const formData = new FormData();
@@ -108,12 +123,14 @@ analyzeButton.addEventListener("click", async () => {
     results.hidden = false;
     analyzeLabel.textContent = "Analyze again";
     analyzeButton.disabled = false;
+    analyzeButton.removeAttribute("aria-busy");
     formMessage.textContent = "Analysis complete.";
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
     formMessage.textContent = error.message;
     analyzeLabel.textContent = "Try again";
     analyzeButton.disabled = false;
+    analyzeButton.removeAttribute("aria-busy");
   }
 });
 

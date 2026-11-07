@@ -31,6 +31,18 @@ The project is intended to help job seekers quickly understand whether their res
 
 This project is currently in development.
 
+## Recent UX improvements
+
+- **Safer resume uploads:** PDF type and the 10 MB size limit are checked before
+  an analysis request, including files added by drag and drop. Invalid files
+  receive an immediate, actionable message instead of waiting for the server.
+- **Clearer analysis feedback:** the analyze action exposes its busy state to
+  assistive technology, keeps status messages in a live region, and provides
+  consistent recovery messaging when an analysis fails.
+- **More accessible interaction:** keyboard focus is visibly highlighted across
+  controls, upload states, and the job description field. Motion is reduced for
+  users who enable `prefers-reduced-motion`, including the results auto-scroll.
+
 ## Run Locally
 
 The application uses a small Node.js server so the same command can run locally
