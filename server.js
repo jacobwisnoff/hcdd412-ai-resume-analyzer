@@ -11,6 +11,7 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const publicRoot = path.join(projectRoot, "src");
 const port = Number.parseInt(process.env.PORT || "10000", 10);
 const maxResumeBytes = 10 * 1024 * 1024;
+const maxJobDescriptionChars = 5000;
 const anthropicModel = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
 
 const contentTypes = {
@@ -100,6 +101,10 @@ async function analyzeResume(request, response) {
     sendJson(response, 400, { error: "A PDF resume and job description are required." });
     return;
   }
+  if (jobDescription.length > maxJobDescriptionChars) {
+    sendJson(response, 400, { error: `The job description must be ${maxJobDescriptionChars.toLocaleString()} characters or fewer.` });
+    return;
+  }
   if (!resume.filename.toLowerCase().endsWith(".pdf") || resume.mimeType !== "application/pdf") {
     sendJson(response, 400, { error: "Please upload a PDF resume." });
     return;
@@ -125,7 +130,7 @@ async function analyzeResume(request, response) {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const message = await anthropic.messages.create({
     model: anthropicModel,
-    max_tokens: 1200,
+    max_tokens: 1500,
     system: "You are a careful resume reviewer. Only use evidence present in the resume and job description. Return valid JSON only, with no markdown.",
     messages: [{
       role: "user",
@@ -143,9 +148,12 @@ Return exactly this JSON shape:
   "summary": "one concise sentence",
   "strengths": ["short item", "short item", "short item"],
   "gaps": ["short item", "short item", "short item"],
-  "recommendations": ["specific action", "specific action", "specific action"]
+  "recommendations": ["specific action", "specific action", "specific action"],
+  "missingKeywords": ["keyword", "keyword", "keyword"]
 }
-The score must be an integer from 0 to 100.`
+The score must be an integer from 0 to 100.
+Keep every strengths, gaps, and recommendations item to one sentence of 20 words or fewer; lead with the key point.
+"missingKeywords" lists up to 8 important skills, tools, or terms from the job description that do not appear in the resume (short phrases, 1-3 words each). Use an empty array if none are missing.`
     }]
   });
 
@@ -174,6 +182,10 @@ The score must be an integer from 0 to 100.`
     const error = new Error("The AI returned an incomplete analysis.");
     error.statusCode = 502;
     throw error;
+  }
+  // Older prompts / occasional model slips may omit keywords; treat that as "none found".
+  if (!Array.isArray(analysis.missingKeywords)) {
+    analysis.missingKeywords = [];
   }
   sendJson(response, 200, analysis);
 }
