@@ -50,3 +50,38 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  # Scans npm dependencies for known vulnerabilities (GitHub Advisory Database).
+  # Uploads the full report as an artifact and fails the check on high/critical findings.
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        if: hashFiles('package-lock.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+# Writes the full report (all severities). "|| true" keeps this step from failing so the report always gets uploaded.
+      - name: Generate audit report
+        if: hashFiles('package-lock.json') != ''
+        run: |
+          npm audit > audit-report.txt || true
+          npm audit --json > audit-report.json || true
+      - name: Upload audit report
+        if: always() && hashFiles('package-lock.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: |
+            audit-report.txt
+            audit-report.json
+# Fails the check if any high or critical vulnerabilities are found.
+      - name: Enforce audit threshold
+        if: hashFiles('package-lock.json') != ''
+        run: npm audit --audit-level=high
